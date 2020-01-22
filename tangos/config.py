@@ -16,7 +16,6 @@ default_fileset_handler_class = "pynbody.PynbodyInputHandler"
 default_linking_threshold = 0.005
 # the percentage of particles in common between two objects before the database bothers to store the relationship
 
-rel_halo_catalog_dir = "Rockstar/"
 min_halo_particles = 1000
 # the minimum number of particles needed in an object before the database bothers to store it
 

@@ -431,9 +431,14 @@ class GadgetRockstarInputHandler(PynbodyInputHandler):
 
     def _is_able_to_load(self, filepath):
         try:
+            pathname = os.path.join(os.path.dirname(filepath), config.rockstar_halo_dir)
+            format_revision = config.rockstar_format_revision
+        except AttributeError:
+            pathname = None
+            format_revision = None
+        try:
             f = pynbody.load(filepath)
-            pathname = os.path.join(os.path.dirname(filepath), config.rel_halo_catalog_dir)
-            h = pynbody.halo.RockstarCatalogue(f, pathname=pathname)
+            h = pynbody.halo.RockstarCatalogue(f, pathname=pathname, format_revision=format_revision)
             return True
         except (IOError, RuntimeError):
             return False
