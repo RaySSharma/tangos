@@ -432,7 +432,8 @@ class GadgetRockstarInputHandler(PynbodyInputHandler):
     def _is_able_to_load(self, filepath):
         try:
             f = pynbody.load(filepath)
-            h = pynbody.halo.RockstarCatalogue(f)
+            pathname = os.path.join(os.path.dirname(filepath), config.rel_halo_catalog_dir)
+            h = pynbody.halo.RockstarCatalogue(f, pathname=pathname)
             return True
         except (IOError, RuntimeError):
             return False

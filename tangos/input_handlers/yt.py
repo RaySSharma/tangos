@@ -88,8 +88,43 @@ class YtChangaAHFInputHandler(YtInputHandler):
     patterns = ["*.00???", "*.00????"]
 
     def _load_halo_cat_without_caching(self, ts_extension, snapshot_file):
+        print(self._extension_to_filename("halos/"+ts_extension)+".AHF_param")
         cat = yt.frontends.ahf.AHFHalosDataset(self._extension_to_filename("halos/"+ts_extension)+".AHF_param",
                                                 hubble_constant = snapshot_file.hubble_constant)
         cat_data = cat.all_data()
         return cat, cat_data
 
+class YtGadgetRockstarInputHandler(YtInputHandler):
+    patterns = ["snap*_0??", "snap*_0???"]
+
+    def _load_halo_cat_without_caching(self, ts_extension, snapshot_file):
+        extension = "Rockstar/halos_" + str(int(ts_extension[-3:])) + '.0.bin'
+        cat = yt.frontends.rockstar.RockstarDataset(self._extension_to_filename(extension))
+        cat_data = cat.all_data()
+        return cat, cat_data
+
+    def enumerate_objects(self, ts_extension, object_typetag="halo", min_halo_particles=config.min_halo_particles):
+        if object_typetag!="halo":
+            return
+        if self._can_enumerate_objects_from_statfile(ts_extension, object_typetag):
+            for X in self._enumerate_objects_from_statfile(ts_extension, object_typetag):
+                yield X
+        else:
+            logger.warn("No halo statistics file found for timestep %r", ts_extension)
+            logger.warn(" => enumerating %ss directly using yt", object_typetag)
+
+            catalogue, catalogue_data = self._load_halo_cat(ts_extension, object_typetag)
+            num_objects = len(catalogue_data["halos", "virial_radius"])
+
+            for i in range(num_objects):
+                try:
+                    obj = self.load_object(ts_extension, i, object_typetag)
+                    NDM = len(obj["Halo","Mass"])
+                    NGas = len(obj["Gas","Mass"])
+                    NStar = len(obj["Stars","Mass"])
+                except (yt.utilities.exceptions.YTSphereTooSmall, yt.utilities.exceptions.YTFieldNotFound) as e:
+                    NDM = 0 
+                    NGas = 0 
+                    NStar = 0 
+                if NDM > min_halo_particles:
+                    yield i, NDM, NStar, NGas
