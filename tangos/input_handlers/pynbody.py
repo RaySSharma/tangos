@@ -426,7 +426,7 @@ class GadgetSubfindInputHandler(PynbodyInputHandler):
 
 
 class GadgetRockstarInputHandler(PynbodyInputHandler):
-    patterns = ["snapshot_???"]
+    patterns = ["snap*_???"]
     auxiliary_file_patterns = ["halos_*.bin"]
 
     def _is_able_to_load(self, filepath):
